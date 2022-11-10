@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">ChatBluetooth</string>
+
+    <string name="flash_on">Flash On</string>
+    <string name="connect">Connect</string>
+    <string name="confi_string">Configuracion Esp32</string>
+    <string name="confi_stringbt">Configuracion Bluetooth</string>
+    <string name="btn_visible">Hacer BT visible</string>
+    <string name="btn_encender">ON/OFF</string>
+    <string name="btn_conectar">CONECTAR</string>
+    <string name="btn_buscar">BUSCAR</string>
+    <string name="btn_refrescar">Refrescar</string>
+    <string name="btn_cerrar">Cerrar</string>
+    <string name="btn_abrir">abrir</string>
+    <string name="bluetooth_desactivado">Bluetooth desactivado</string>
+    <string name="dispositivo_seleccionado">Dispositivo seleccionado:</string>
+    <string name="btn_detener">btn detener</string>
+    <string name="btn_vaciar_up">btn vaciar up</string>
+    <string name="btn_vaciar_down">btn vaciar down</string>
+    <string name="btn_sacar_base">btn sacar base</string>
+    <string name="btn_meter_base">btn meter base</string>
+    <string name="bluetooth_on">Bluetooth ON</string>
+    <string name="bluetooth">Bluetooth</string>
+    <string name="ip_de_esp32_cam">IP de ESP32 Cam</string>
+    <string name="cambiar_ip">Cambiar IP</string>
+
+</resources>
