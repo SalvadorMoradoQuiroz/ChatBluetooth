@@ -50,7 +50,7 @@ class BluetoothConnectionService(var mContext: Context) {
         override fun run() {
             var socket: BluetoothSocket? = null
             try {
-                socket = mmServerSocket!!.accept()
+                 socket = mmServerSocket!!.accept()
             } catch (e: IOException) {
                 Log.e("ERROR", "Exception Connection Server" + e.message)
             }

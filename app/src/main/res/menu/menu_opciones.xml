@@ -3,10 +3,6 @@
 
     <!-- "Mark Favorite", should appear as action button if possible -->
 
-    <item android:id="@+id/conf_conexion"
-        android:title="@string/confi_string"
-        app:showAsAction="never"/>
-
     <item
         android:id="@+id/conf_bt"
         android:title="@string/confi_stringbt"

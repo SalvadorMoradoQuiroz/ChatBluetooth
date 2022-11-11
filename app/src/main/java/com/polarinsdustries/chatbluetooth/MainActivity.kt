@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() , AdapterView.OnItemSelectedListener {
         editText_Message = findViewById(R.id.editText_Message)
 
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-        mBluetoothConnection = BluetoothConnectionService(this@MainActivity)
+
 
         messages = StringBuilder()
         LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, IntentFilter("incomingMessage"))
@@ -165,6 +165,7 @@ class MainActivity : AppCompatActivity() , AdapterView.OnItemSelectedListener {
 
         button_ConnectBt.setOnClickListener {
             if(btDevice!=null){
+                mBluetoothConnection = BluetoothConnectionService(this@MainActivity)
                 startBTConnection(btDevice, MY_UUID_INSECURE)
             }
         }
