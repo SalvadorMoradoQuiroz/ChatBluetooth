@@ -219,9 +219,6 @@ class BluetoothConnectionService(var mContext: Context) {
     }
 
     fun write(out: ByteArray?) {
-        // Crear un objeto temporal
-        var r: ConnectedThread
-        //Escribiendo
         mConnectedThread!!.write(out)
     }
 

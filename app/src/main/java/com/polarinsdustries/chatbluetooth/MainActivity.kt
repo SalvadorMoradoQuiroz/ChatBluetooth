@@ -21,8 +21,9 @@ import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.material.switchmaterial.SwitchMaterial
-import com.polarinsdustries.wifibluetooth.R
+import java.nio.charset.Charset
 import java.util.*
 
 class MainActivity : AppCompatActivity() , AdapterView.OnItemSelectedListener {
@@ -33,34 +34,51 @@ class MainActivity : AppCompatActivity() , AdapterView.OnItemSelectedListener {
     }
 
     //BT
-    var mBluetoothAdapter: BluetoothAdapter? = null
-    var mBTDevices: ArrayList<BluetoothDevice>? = null
-    var mDeviceListAdapter: DeviceListAdapter? = null
-    var lvNewDevices: ListView? = null
+    private var mBluetoothAdapter: BluetoothAdapter? = null
+    private var mBTDevices: ArrayList<BluetoothDevice>? = null
+    private var mDeviceListAdapter: DeviceListAdapter? = null
+    private var lvNewDevices: ListView? = null
+    private var btDevice:BluetoothDevice? = null
 
     //BT libBluetooth
-    var deviceMAC: String? = null
-    var deviceName: String? = null
+    private var deviceMAC: String? = null
+    private var deviceName: String? = null
 
-    // A CompositeDisposable that keeps track of all of our asynchronous tasks
-    //private val compositeDisposable = CompositeDisposable()
+    private var mBluetoothConnection: BluetoothConnectionService? = null
 
-    // Our BluetoothManager!
-    //private var bluetoothManager: BluetoothManager? = null
-
-    // Our Bluetooth Device! When disconnected it is null, so make sure we know that we need to deal with it potentially being null
-    //@Nullable
-    //private var deviceInterface: SimpleBluetoothDeviceInterface? = null
     private var flagBluetooth: Boolean = false
     private var switch_BtActivate: SwitchMaterial? = null
     private var textView_DeviceSelected: TextView? = null
+    private var button_Send:Button? = null
+    private var textView_Messages:TextView? = null
+    private var editText_Message:EditText? = null
 
+    private var messages:StringBuilder? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        button_Send = findViewById(R.id.button_Send)
+        textView_Messages = findViewById(R.id.textView_Messages)
+        editText_Message = findViewById(R.id.editText_Message)
+
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+        mBluetoothConnection = BluetoothConnectionService(this@MainActivity)
+
+        messages = StringBuilder()
+        LocalBroadcastManager.getInstance(this).registerReceiver(mReceiver, IntentFilter("incomingMessage"))
+
+        button_Send!!.setOnClickListener{
+            if(btDevice!=null){
+                val bytes: ByteArray = editText_Message?.text.toString().toByteArray(Charset.defaultCharset())
+                mBluetoothConnection?.write(bytes)
+                editText_Message?.setText("")
+            }else{
+                Toast.makeText(this@MainActivity, "Se debe conectar a un dispositivo BT", Toast.LENGTH_SHORT).show()
+            }
+
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -118,10 +136,10 @@ class MainActivity : AppCompatActivity() , AdapterView.OnItemSelectedListener {
             this.switch_BtActivate!!.isChecked = true
         }
 
-        /*if (this.deviceInterface != null) {
-            deviceMAC = this.deviceInterface!!.device.mac
+        if (this.btDevice != null) {
+            deviceMAC = btDevice!!.address
             textView_DeviceSelected!!.setText("Dispositivo seleccionado: " + deviceMAC + " esta conectado.")
-        }*/
+        }
 
         this.switch_BtActivate!!.setOnClickListener {
             enableDisableBT()
@@ -134,6 +152,7 @@ class MainActivity : AppCompatActivity() , AdapterView.OnItemSelectedListener {
         lvNewDevices!!.setOnItemClickListener(
             AdapterView.OnItemClickListener { parent, view, position, id ->
                 mBluetoothAdapter?.cancelDiscovery()
+                this.btDevice = mBTDevices!!.get(position)
                 this.deviceMAC = mBTDevices!!.get(position).getAddress()
                 this.deviceName = mBTDevices!!.get(position).getName()
                 textView_DeviceSelected!!.setText(
@@ -144,37 +163,12 @@ class MainActivity : AppCompatActivity() , AdapterView.OnItemSelectedListener {
             }
         )
 
-        button_ConnectBt.setOnClickListener { connectToDeviceBT() }
-
+        button_ConnectBt.setOnClickListener {
+            if(btDevice!=null){
+                startBTConnection(btDevice, MY_UUID_INSECURE)
+            }
+        }
         button_CloseConfigBt.setOnClickListener { dialogConfBt.dismiss() }
-
-    }
-
-    private fun connectToDeviceBT() {
-        /*if (deviceMAC != null) {
-            compositeDisposable.add(
-                bluetoothManager!!.openSerialDevice(deviceMAC!!)
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                        { device -> onConnected(device.toSimpleDeviceInterface()) },
-                        ({ t -> onErrorConnected(t) })
-                    )
-            )
-        } else {
-            Toast.makeText(
-                applicationContext,
-                "Debes buscar y seleccionar un dispositivo primero.",
-                Toast.LENGTH_SHORT
-            ).show()
-        }*/
-    }
-
-    //Error al conectar dispositivo
-    private fun onErrorConnected(error: Throwable) {
-        Toast.makeText(applicationContext, "Error al conectar el dispositivo.", Toast.LENGTH_SHORT)
-            .show()
-        Log.e("Error onConnected", error.message.toString())
     }
 
     @SuppressLint("MissingPermission")
@@ -204,6 +198,7 @@ class MainActivity : AppCompatActivity() , AdapterView.OnItemSelectedListener {
                             mDeviceListAdapter!!.notifyDataSetChanged()
                             textView_DeviceSelected!!.setText("Dispositivo seleccionado: ")
                             deviceMAC = null
+                            btDevice = null
                         }
                         mBTDevices!!.clear();
                     }
@@ -399,4 +394,18 @@ class MainActivity : AppCompatActivity() , AdapterView.OnItemSelectedListener {
             registerReceiver(mBroadcastReceiver1, BTIntent)
         }
     }
+
+    fun startBTConnection(device: BluetoothDevice?, uuid: UUID?) {
+        mBluetoothConnection?.startClient(device, uuid)
+    }
+
+    //Recibir un mensaje y lo muestra en el textView
+    var mReceiver: BroadcastReceiver = object: BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent){
+            var text: String? = intent.getStringExtra("Message")
+            messages?.append("$text \n")
+            textView_Messages?.setText(messages)
+        }
+    }
+
 }

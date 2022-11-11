@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'com.polarinsdustries.wifibluetooth'
+    namespace 'com.polarinsdustries.chatbluetooth'
     compileSdk 32
 
     defaultConfig {
-        applicationId "com.polarinsdustries.wifibluetooth"
+        applicationId "com.polarinsdustries.chatbluetooth"
         minSdk 24
         targetSdk 32
         versionCode 1

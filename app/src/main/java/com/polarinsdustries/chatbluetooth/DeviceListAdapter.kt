@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.TextView
-import com.polarinsdustries.wifibluetooth.R
 import java.util.ArrayList
 
 class DeviceListAdapter(context: Context, tvResourceId: Int, private val mDevices: ArrayList<BluetoothDevice>) : ArrayAdapter<BluetoothDevice?>(context, tvResourceId, mDevices as List<BluetoothDevice?>)
